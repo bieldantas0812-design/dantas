@@ -1,0 +1,181 @@
+{
+  "entities": {
+    "InventoryItem": {
+      "title": "Item de Estoque (Camisa Lisa)",
+      "description": "Camisetas compradas para estampar.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "color": { "type": "string" },
+        "size": { "type": "string", "enum": ["P", "M", "G", "GG", "EG"] },
+        "model": { "type": "string" },
+        "unitPrice": { "type": "number" },
+        "supplierId": { "type": "string" },
+        "purchaseDate": { "type": "string", "format": "date-time" },
+        "initialQuantity": { "type": "number" },
+        "soldQuantity": { "type": "number" },
+        "currentStock": { "type": "number" }
+      },
+      "required": ["color", "size", "model", "unitPrice", "initialQuantity"]
+    },
+    "DTFStock": {
+      "title": "Estoque de DTF",
+      "description": "Metragem de DTF comprada.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "meters": { "type": "number" },
+        "pricePerMeter": { "type": "number" },
+        "printsPerMeter": { "type": "number" },
+        "purchaseDate": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Print": {
+      "title": "Estampa",
+      "description": "Definição de uma estampa específica e seu custo.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["frente", "costas", "manga", "etiqueta"] },
+        "size": { "type": "string" },
+        "unitCost": { "type": "number" }
+      }
+    },
+    "Product": {
+      "title": "Produto Final",
+      "description": "Combinação de camisa lisa + estampas.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "collectionId": { "type": "string" },
+        "mockupUrl": { "type": "string" },
+        "color": { "type": "string" },
+        "baseShirtCost": { "type": "number" },
+        "prints": { "type": "array", "items": { "type": "object" } },
+        "extraCosts": { "type": "object" },
+        "totalCost": { "type": "number" },
+        "salePrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["ideia", "produzindo", "pronta", "vendendo", "esgotada"] }
+      }
+    },
+    "Collection": {
+      "title": "Coleção",
+      "description": "Grupo de produtos por lançamento.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "launchDate": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      }
+    },
+    "Sale": {
+      "title": "Venda",
+      "description": "Registro de uma venda realizada.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string" },
+        "productId": { "type": "string" },
+        "size": { "type": "string" },
+        "amountPaid": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "deliveryStatus": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "profit": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Expense": {
+      "title": "Despesa",
+      "description": "Gastos da marca.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "type": { "type": "string", "enum": ["fixo", "variavel", "investimento"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Goal": {
+      "title": "Meta",
+      "description": "Metas de vendas, faturamento ou lucro.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "targetValue": { "type": "number" },
+        "currentValue": { "type": "number" },
+        "deadline": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Client": {
+      "title": "Cliente",
+      "description": "Dados do comprador.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "totalOrders": { "type": "number" },
+        "totalSpent": { "type": "number" }
+      }
+    },
+    "Supplier": {
+      "title": "Fornecedor",
+      "description": "Quem fornece camisas ou serviços.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "contact": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/inventory_items/{itemId}": {
+      "schema": "InventoryItem",
+      "description": "Camisetas lisas em estoque."
+    },
+    "/dtf_stock/{dtfId}": {
+      "schema": "DTFStock",
+      "description": "Compras de DTF."
+    },
+    "/prints/{printId}": {
+      "schema": "Print",
+      "description": "Catálogo de estampas."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Produtos cadastrados."
+    },
+    "/collections/{collectionId}": {
+      "schema": "Collection",
+      "description": "Coleções da marca."
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Histórico de vendas."
+    },
+    "/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Registro de gastos."
+    },
+    "/goals/{goalId}": {
+      "schema": "Goal",
+      "description": "Metas da marca."
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Base de clientes."
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Fornecedores cadastrados."
+    }
+  }
+}

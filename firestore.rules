@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Helpers
+    function isValidInventoryItem(data) {
+      return data.userId == request.auth.uid &&
+             data.color is string && data.color.size() <= 50 &&
+             data.size in ['P', 'M', 'G', 'GG', 'EG'] &&
+             data.unitPrice is number && data.unitPrice >= 0 &&
+             data.initialQuantity is number && data.initialQuantity >= 0;
+    }
+
+    function isValidProduct(data) {
+      return data.userId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             data.totalCost is number && data.totalCost >= 0;
+    }
+
+    function isValidSale(data) {
+      return data.userId == request.auth.uid &&
+             data.amountPaid is number && data.amountPaid >= 0 &&
+             data.productId is string;
+    }
+
+    function isValidExpense(data) {
+      return data.userId == request.auth.uid &&
+             data.amount is number && data.amount >= 0 &&
+             data.type in ['fixo', 'variavel', 'investimento'];
+    }
+
+    // Collections
+    match /inventory_items/{itemId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidInventoryItem(incoming()) && isValidId(itemId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && isValidInventoryItem(incoming());
+    }
+
+    match /dtf_stock/{dtfId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(dtfId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && incoming().userId == request.auth.uid;
+    }
+
+    match /prints/{printId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(printId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /products/{productId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidProduct(incoming()) && isValidId(productId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && isValidProduct(incoming());
+    }
+
+    match /collections/{collectionId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(collectionId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /sales/{saleId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidSale(incoming()) && isValidId(saleId);
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /expenses/{expenseId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidExpense(incoming()) && isValidId(expenseId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid && isValidExpense(incoming());
+    }
+
+    match /goals/{goalId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(goalId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /clients/{clientId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(clientId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /suppliers/{supplierId} {
+      allow read, delete: if isSignedIn() && existing().userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && isValidId(supplierId);
+      allow update: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}
